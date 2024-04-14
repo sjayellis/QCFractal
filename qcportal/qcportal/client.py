@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import math
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union, Sequence, Iterable, TypeVar, Type
+from typing import Any, Dict, List, Optional, Tuple, Union, Sequence, Iterable, TypeVar, Type, Literal
 
 from tabulate import tabulate
 
@@ -15,9 +15,10 @@ from qcportal.gridoptimization import (
     GridoptimizationQueryFilters,
 )
 from qcportal.manybody import (
-    ManybodyKeywords,
+    BSSECorrectionEnum,
     ManybodyRecord,
     ManybodyAddBody,
+    ManybodyKeywords,
     ManybodyQueryFilters,
 )
 from qcportal.neb import (
@@ -2041,8 +2042,9 @@ class PortalClient(PortalClientBase):
         self,
         initial_molecules: Sequence[Union[int, Molecule]],
         program: str,
-        singlepoint_specification: QCSpecification,
-        keywords: ManybodyKeywords,
+        levels: Dict[Union[int, Literal["supersystem"]], QCSpecification],
+        bsse_correction: Union[BSSECorrectionEnum, Sequence[BSSECorrectionEnum]],
+        keywords: Union[ManybodyKeywords, Dict[str, Any]],
         tag: str = "*",
         priority: PriorityEnum = PriorityEnum.normal,
         owner_group: Optional[str] = None,
@@ -2095,7 +2097,8 @@ class PortalClient(PortalClientBase):
             "initial_molecules": initial_molecules,
             "specification": {
                 "program": program,
-                "singlepoint_specification": singlepoint_specification,
+                "levels": levels,
+                "bsse_correction": make_list(bsse_correction),
                 "keywords": keywords,
             },
             "tag": tag,
