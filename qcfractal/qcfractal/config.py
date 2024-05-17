@@ -291,8 +291,7 @@ class WebAPIConfig(ConfigBase):
     Settings for the Web API (api) interface
     """
 
-    num_workers: int = Field(1, description="Number of worker processes to spawn in Gunicorn")
-    num_threads_per_worker: int = Field(1, description="Number of threads per worker")
+    num_threads_per_worker: int = Field(4, description="Number of threads per worker")
     worker_timeout: int = Field(
         120,
         description="If the master process does not hear from a worker for the given amount of time (in seconds),"
@@ -313,8 +312,8 @@ class WebAPIConfig(ConfigBase):
     extra_flask_options: Optional[Dict[str, Any]] = Field(
         None, description="Any additional options to pass directly to flask"
     )
-    extra_gunicorn_options: Optional[Dict[str, Any]] = Field(
-        None, description="Any additional options to pass directly to gunicorn"
+    extra_waitress_options: Optional[Dict[str, Any]] = Field(
+        None, description="Any additional options to pass directly to the waitress serve function"
     )
 
     class Config(ConfigCommon):
