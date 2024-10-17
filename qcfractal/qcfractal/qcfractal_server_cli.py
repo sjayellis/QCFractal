@@ -194,6 +194,7 @@ def parse_args() -> argparse.Namespace:
     # Allow some config settings to be altered via the command line
     start_api.add_argument("--logfile", **FractalConfig.help_info("logfile"))
     start_api.add_argument("--loglevel", **FractalConfig.help_info("loglevel"))
+    start_api.add_argument("--profile", help="Enable profiling of the API, and output to the specified file")
 
     #####################################
     # upgrade-db subcommand
@@ -970,7 +971,29 @@ def main():
     elif args.command == "start-job-runner":
         server_start_job_runner(qcf_config)
     elif args.command == "start-api":
-        server_start_api(qcf_config)
+        if args.profile:
+            import cProfile
+
+            pr = cProfile.Profile()
+            pr.enable()
+
+            def _write_profile(sig, frame):
+                signame = signal.Signals(sig).name
+                logger.debug("In cleanup of qcfractal_server")
+                pr.disable()
+                pr.dump_stats(args.profile)
+                raise EndProcess(signame)
+
+            signal.signal(signal.SIGINT, _write_profile)
+            signal.signal(signal.SIGTERM, _write_profile)
+
+            try:
+                server_start_api(qcf_config)
+            finally:
+                pr.disable()
+                pr.dump_stats(args.profile)
+        else:
+            server_start_api(qcf_config)
     elif args.command == "upgrade-db":
         server_upgrade_db(qcf_config)
     elif args.command == "user":
